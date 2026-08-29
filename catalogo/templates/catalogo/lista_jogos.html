@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Jogos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+        .jogo { border-bottom: 1px solid #ccc; padding: 15px 0; }
+        .nota { color: #d68910; font-weight: bold; }
+        form { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
+        input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 6px; }
+        button { padding: 8px 16px; }
+    </style>
+</head>
+<body>
+    <h1>Catálogo de Jogos</h1>
+
+    {% for jogo in jogos %}
+        <div class="jogo">
+            <h2>{{ jogo.titulo }}</h2>
+            <p>{{ jogo.descricao }}</p>
+            <p class="nota">
+                {% if jogo.media_notas %}
+                    Nota média: {{ jogo.media_notas|floatformat:1 }} / 5
+                {% else %}
+                    Ainda sem avaliações
+                {% endif %}
+            </p>
+        </div>
+    {% empty %}
+        <p>Nenhum jogo cadastrado ainda.</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <h2>Avaliar um jogo</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Enviar avaliação</button>
+        </form>
+    {% else %}
+        <p>Faça login no Admin para poder avaliar um jogo.</p>
+    {% endif %}
+</body>
+</html>

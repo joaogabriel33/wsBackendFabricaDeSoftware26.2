@@ -7,6 +7,11 @@ from .serializers import (
     JogoDetalheSerializer,
     AvaliacaoSerializer,
 )
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Avg
+from .models import Jogo
+from .forms import AvaliacaoForm
 
 
 class PlataformaViewSet(viewsets.ModelViewSet):
@@ -38,3 +43,22 @@ class AvaliacaoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(usuario=self.request.user)
+
+def lista_jogos(request):
+    jogos = Jogo.objects.annotate(media_notas=Avg('avaliacoes__nota')).order_by('-criado_em')
+
+    if request.method == 'POST':
+        form = AvaliacaoForm(request.POST)
+        if form.is_valid():
+            avaliacao = form.save(commit=False)
+            avaliacao.usuario = request.user
+            avaliacao.save()
+            return redirect('lista_jogos')
+    else:
+        form = AvaliacaoForm()
+
+    contexto = {
+        'jogos': jogos,
+        'form': form,
+    }
+    return render(request, 'catalogo/lista_jogos.html', contexto)
