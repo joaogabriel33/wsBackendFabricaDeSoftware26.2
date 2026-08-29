@@ -10,7 +10,6 @@ from .serializers import (
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from .models import Jogo
 from .forms import AvaliacaoForm
 
 
@@ -50,9 +49,14 @@ def lista_jogos(request):
     if request.method == 'POST':
         form = AvaliacaoForm(request.POST)
         if form.is_valid():
-            avaliacao = form.save(commit=False)
-            avaliacao.usuario = request.user
-            avaliacao.save()
+            Avaliacao.objects.update_or_create(
+                jogo=form.cleaned_data['jogo'],
+                usuario=request.user,
+                defaults={
+                    'nota': form.cleaned_data['nota'],
+                    'comentario': form.cleaned_data['comentario'],
+                }
+            )
             return redirect('lista_jogos')
     else:
         form = AvaliacaoForm()
